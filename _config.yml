@@ -20,8 +20,8 @@ description: Everything is going on,but don't give up trying! # this means to ig
 
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jNO
-github_username:  TryBin
+twitter_username: NO
+github_username:  HexUsr
 
 # Build settings
 markdown: kramdown
