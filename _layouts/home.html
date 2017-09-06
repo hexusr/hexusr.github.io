@@ -1,0 +1,36 @@
+---
+layout: default
+---
+
+<div class="home">
+
+    <h1 class="page-heading">我的文章</h1>
+    {% for category in site.categories %}
+    <table id="table-{{ category | first }}" class="table table-hover table-responsive">
+        <caption>
+            <h3>{{ category | first }}</h3>
+        </caption>
+        {% for post in category.last %}
+        <tr>
+            <td><a href="{{ post.url | relative_url }}">{{ post.title}}</a></td>
+            <td align="right">{{ post.date | date:"%d/%m/%Y"}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %} {{ content }}
+</div>
+<script>
+    function categoryClick(id) {
+        var displayDiv = "table-" + id;
+        $(".category").css("display", "none");
+        $(".table").css("display", "none");
+        $("#" + displayDiv).fadeIn(1000);
+
+    }
+    $(document).ready(function() {
+        //加上淡入淡出动画
+        // $(".category").fadeOut();
+
+        $("body").fadeIn(1000);
+    });
+</script>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: " en " }}">
+
+{% include head.html %}
+
+<body>
+
+    {% include header.html %}
+
+    <main class="page-content" style="display:none;" aria-label="Content">
+        <div class="wrapper">
+            {{ content }}
+        </div>
+    </main>
+
+    {% include footer.html %}
+
+</body>
+<script>
+    $(document).ready(function() {
+       
+        $(".page-content").fadeIn(1000);
+        var navOffset = $("#navbar").offset().top;
+        var navHeight = $("#navbar").height();
+        $(window).scroll(function() {
+            console.log("nav1", navOffset + navHeight);
+            console.log("nav2", navOffset - navHeight);
+
+            var scrollPos = $(window).scrollTop();
+            console.log("scroll", scrollPos);
+
+            if (scrollPos > navOffset + navHeight) {
+                $("#navbar").addClass("fixed");
+
+            } else {
+                console.log("fix", "will remove");
+                $("#navbar").removeClass("fixed");
+            }
+
+        });
+    });
+</script>
+
+</html>
