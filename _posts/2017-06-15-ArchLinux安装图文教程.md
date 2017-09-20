@@ -201,6 +201,7 @@ sda3---------------100G------------------------/
 ```
 
 如下图所示
+
 ![](http://img.blog.csdn.net/20170720105130254?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 ## 7.开始安装基本操作系统
 执行： 
@@ -225,6 +226,7 @@ sda3---------------100G------------------------/
 ```
 
 检查一下
+
 ![](http://img.blog.csdn.net/20170720105236753?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 ### （2）切换到新系统
 执行：
@@ -284,6 +286,7 @@ zh_CN.UTF-8 UTF-8
 设置硬件时间
 
 ![](http://img.blog.csdn.net/20170720110050785?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 ## 9.引导系统
 GRUB进行UEFI引导
 执行：
@@ -293,7 +296,9 @@ GRUB进行UEFI引导
 ```
 
 安装引导工具
+
 ![](http://img.blog.csdn.net/20170720110143861?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 执行：
 
 ```
@@ -303,6 +308,7 @@ GRUB进行UEFI引导
 进行安装grub
 
 ![](http://img.blog.csdn.net/20170720110214651?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 执行： 
 
 ```
@@ -312,6 +318,7 @@ GRUB进行UEFI引导
 进行配置grub
 
 ![](http://img.blog.csdn.net/20170720110353531?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 ## 10.用户管理
 ### （1）设置root密码
 执行:
@@ -321,6 +328,7 @@ GRUB进行UEFI引导
 ```
 
 ![](http://img.blog.csdn.net/20170720110429112?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 ### （2）添加用户
 执行：
 
@@ -381,7 +389,9 @@ root下执行不了此命令，可以省略，执行完下面的命令一会重�
 ```
 
 开机自动启动dhcp服务
+
 ![](http://img.blog.csdn.net/20170720110504241?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 ###（2）无线连接：
 
 ```
@@ -644,6 +654,7 @@ export XMODIFIERS="@im=fcitx"
 （7）桌面美化
 Kde-Plasma桌面：
 ![](https://coding.net/u/TryBin/p/image/git/raw/master/ArchLinux%25E5%25AE%2589%25E8%25A3%2585/arch-plasma.png)
+![](https://github.com/hexusr/pictures/blob/master/plasma.png?raw=true)
 Gnome桌面：
 
 ![](http://img.blog.csdn.net/20170619153152180?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
