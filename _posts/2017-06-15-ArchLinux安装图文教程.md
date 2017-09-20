@@ -116,6 +116,7 @@ sda2---------------200M------------------------/boot
 sda3---------------100G------------------------/
 先查看下电脑硬盘设备，执行lsblk,如下图所示：(不同电脑设备不同，有可能会是 /dev/sdb……）
 (有parted、fdisk两种分区方法，本次采用fdisk进行分区)
+
 ![](http://img.blog.csdn.net/20170720103833519?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 ## 用fdisk进行分区
 （1）建立GPT分区表
@@ -180,6 +181,7 @@ sda3---------------100G------------------------/
 
 (格式化根分区)
 执行完如下图所示：
+
 ![](http://img.blog.csdn.net/20170720105045302?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 
 ### （2）挂载：
