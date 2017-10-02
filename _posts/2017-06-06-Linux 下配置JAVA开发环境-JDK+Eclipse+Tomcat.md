@@ -34,7 +34,7 @@ export JRE_HOME=$JAVA_HOME/jre
 export CLASSPATH=.:$CLASSPATH:$JAVA_HOME/lib:$JRE_HOME/lib
 export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
 ```
-然后 执行  sudo nano /etc/profile 命令使配置生效(不执行此命令，需要重启才能生效)
+然后 执行  source /etc/profile 命令使配置生效(不执行此命令，需要重启才能生效)
 执行 java -version  和javac  检查是否配置正确
 
 ```

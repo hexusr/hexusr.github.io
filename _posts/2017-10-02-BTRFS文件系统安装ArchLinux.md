@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "ArchLinux安装图文教程"
-date:   2017-06-15
+title:  "BTRFS文件系统安装ArchLinux"
+date:   2017-10-02
 categories: Linux
 ---
 # 主要为以下步骤：
@@ -110,14 +110,12 @@ categories: Linux
 执行ctrl+x退出，提示 是否保存，输入y，回车 保存
 ## 5.开始分区(UEFI+GPT)
 本次将为sda硬盘重新建立分区表，重新建立分区，数据会全部丢失.
-分区方案(ext4文件系统安装）：
-sda1---------------200M------------------------/boot/EFI
-sda2---------------200M------------------------/boot
-sda3---------------100G------------------------/
+分区方案：
+sda1---------------200M------------------------/boot/EFI  (fat32文件系统)
+sda2---------------100G------------------------/  （btrfs文件系统）
 先查看下电脑硬盘设备，执行lsblk,如下图所示：(不同电脑设备不同，有可能会是 /dev/sdb……）
 (有parted、fdisk两种分区方法，本次采用fdisk进行分区)
 
-![](http://img.blog.csdn.net/20170720103833519?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 ### 用fdisk进行分区
 （1）建立GPT分区表
 执行：
@@ -142,20 +140,14 @@ sda3---------------100G------------------------/
 
 让输入结束扇区，由于一个扇区512B，要创建200M的分区,应该输入：+200M；
 
-建立第二个分区：
-输入n;
-回车
-输入开始扇区: 回车 （默认开始扇区即可）
-输入结束扇区:+200M
 
-建立第三个分区：
+建立第二个分区：
 输入n;
 回车
 输入开始扇区:回车 （默认开始扇区即可）
 输入结束扇区:直接回车(默认大那个数字)
 
 输入:w 保存并退出；
-执行:lsblk 如下图所示：
 
 ## 6.格式化分区，并挂载
 ### （1）格式化分区
@@ -170,39 +162,50 @@ sda3---------------100G------------------------/
 (格式化ESP分区)
 
 ```
-# mkfs.ext4 /dev/sda2 
-```
-
-(格式化boot分区)
-
-```
-# mkfs.ext4 /dev/sda3
+# mkfs.btrfs -f /dev/sda2 
 ```
 
 (格式化根分区)
-执行完如下图所示：
 
-![](http://img.blog.csdn.net/20170720105045302?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
-
-### （2）挂载：
-
+### （2）创建子卷
+创建子卷前，先将 /dev/sda2  挂在到 /mnt下
+执行:
 ```
-# mount /dev/sda3 /mnt
-# mkdir /mnt/boot
-# mount /dev/sda2 /mnt/boot
-# mkdir /mnt/boot/EFI
+# mount /dev/sda2 /mnt
+```
+接下来开始创建子卷（要先进入 /mnt目录下）
+执行：
+```
+# cd /mnt
+# btrfs subvol create rootfs
+# btrfs subvol create hometfs
+# btrfs subvol create pkgfs
+```
+
+### （3）挂载子卷：
+先 cd .. 跳出 /mnt目录，然后卸载 /dev/sda2
+```
+# cd ..
+# umount /dev/sda2
+# mount /dev/sda2 /mnt -o subvol=rootfs,compress=lzo,noatime,discard,ssd,space_cache
+# mkdir /mnt/home
+# mount /dev/sda2 /mnt/home -o subvol=homefs,compress=lzo,noatime,discard,ssd,space_cache
+# mkdir -p /mnt/var/cache/pacman/pkg/
+# mount /dev/sda2 /mnt/var/cache/pacman/pkg/ -o subvol=pkgfs,compress=lzo,noatime,discard,ssd,space_cache
+# mkdir -p /mnt/boot/EFI
 # mount /dev/sda1 /mnt/boot/EFI
 ```
+-o 后面跟着 硬盘优化选项，其中
 
-执行:
-
+固态硬盘(SSD)优化选项:
 ```
-# lsblk 
+compress=lzo,noatime,discard,ssd,space_cache
 ```
-
-如下图所示
-
-![](http://img.blog.csdn.net/20170720105130254?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+机械硬盘(HDD)优化选项:
+```
+compress-force=lzo,noatime,autodefrag,space_cache
+```
+根据自己的情况选择
 ## 7.开始安装基本操作系统
 执行： 
 
@@ -319,6 +322,8 @@ GRUB进行UEFI引导
 
 ![](http://img.blog.csdn.net/20170720110353531?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 
+
+
 ## 10.用户管理
 ### （1）设置root密码
 执行:
@@ -353,36 +358,10 @@ GRUB进行UEFI引导
 在 root ALL=(ALL) ALL 下面添加
 用户名 ALL=(ALL) ALL
 为你刚才创建的用户 添加sudo权限
-###（3）退出chroot重启
-（笔记本请直接跳到下面网络配置，安装无线网络相关模块）
-(也可以不重启，直接进行下面的网络配置和桌面环境配置）
-执行：
 
-```
-# exit
-```
 
-退出chroot
-执行：
-
-```
-# reboot
-```
-
-重启电脑
 ## 11.网络配置
-开机进入电脑
 ###（1）有线连接
-
-```
-# systemctl enable dhcpcd
-```
-
-
-root下执行不了此命令，可以省略，执行完下面的命令一会重启会自动启动dhcpcd服务）
-启动dhcpcd
-
-
 
 ```
 # systemctl enable dhcpcd
@@ -405,6 +384,38 @@ root下执行不了此命令，可以省略，执行完下面的命令一会重�
 ```
 
 （chroot下执行不了此命令）# systemctl enable adsl
+## 12. 使用快照备份还原系统
+### （1）安装 btrfs-progs和snapper
+```
+# pacman -S btrfs-progs snapper
+```
+### （2）使用snapper创建快照、还原快照
+#### 创建配置文件
+执行:
+```
+# snapper -c home-cfg create-config  -f btrfs/home
+# snapper -c root-cfg create-config -f btrfs /
+```
+创建配置文件
+创建的配置文件存放在/etc/snapper/config文件夹下
+#### 创建快照
+```
+# snapper -c 配置文件名 create -d "快照描述"
+```
+可选参数 -t 选择创建快照类型，默认类型为single， 快照类型分为3类：pre,single,post
+#### 查看快照
+```
+# snapper -c 配置文件名 list
+```
+#### 恢复快照
+```
+# snapper -c配置文件名  undochange 快照ID .. 0 FileName1 FileName2
+```
+快照ID为0的代表目前状态,如果省略文件名则恢复全部文件
+#### 删除快照
+```
+# snapper -c 配置文件名 delete 快照ID
+```
 ##　12.安装桌面环境
 ### （1）安装显卡驱动
 确定显卡型号
@@ -427,6 +438,7 @@ Geforce7+--------------------------xf86-video-nouveau
 Geforce6/7-------------------------xf86-video-304xx
 
 ![](http://img.blog.csdn.net/20170720110557828?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 ###（2）安装X窗口系统
 执行：
 
@@ -435,7 +447,9 @@ Geforce6/7-------------------------xf86-video-304xx
 ```
 
 安装X窗口系统
+
 ![](http://img.blog.csdn.net/20170720110626440?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcjhsOHE4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
 执行：
 
 ```
