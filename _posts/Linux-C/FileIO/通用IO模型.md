@@ -4,6 +4,7 @@ title:  "linux下C进行基本I/O操作"
 date:   2017-10-16
 categories: Linux-C
 ---
+
 ## 一.Linux下对普通文本文件进行I/O操作步骤：
 - 1. 调用open()获得一个文件描述符
 - 2. 利用获得的文件描述符作为read() 和write()的一个参数，进行I/O操作。
