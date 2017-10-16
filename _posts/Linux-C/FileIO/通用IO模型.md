@@ -1,0 +1,388 @@
+---
+layout: post
+title:  "linux下C进行基本I/O操作"
+date:   2017-10-16
+categories: Linux-C
+---
+## 一.Linux下对普通文本文件进行I/O操作步骤：
+- 1. 调用open()获得一个文件描述符
+- 2. 利用获得的文件描述符作为read() 和write()的一个参数，进行I/O操作。
+- 3. 使用close()释放文件描述符及其相关资源。
+### 文件描述符:一个非负整数(无符号整数),用于引用在内核中打开的文件。打开或创建一个文件时，内核返回一个文件描述符。读写一个文件时利用open、creat函数返回的文件描述符标识该文件，作为参数传给read或write函数。
+## 函数简介:open()、read()、write()、close()
+### 1. open()
+```
+#include <sys/stat.h>
+#include <fcntl.h>
+ int open(const char *path, int oflag, ...)  
+```
+#### 1.1 return: 返回文件描述符，若发生错误返回-1.
+#### 1.2  path: 要打开的文件路径.
+#### 1.3 oflag: 位掩码，用于指定文件访问模式,用下列一个或多个常数进行或运算构成oflag参数(这些常数定义在<fcntl.h>头文件中)：
+- O_RDONLY:只读方式打开文件
+- O_WRONLY:只写方式打开文件
+- O_RDWR:读写方式打开文件
+#### 以上三个常数应当只制定一个,下列常数则是可选的:
+- O_EXCL 如果同时指定了O _ C R E AT，而文件已经存在，则出错。这可测试一个文件是
+否存在，如果不存在则创建此文件成为一个原子操作。
+- O_TRUNC 如果此文件存在，而且为只读或只写成功打开，则将其长度截短为 0。
+- O_NOCTTY 如果p a t h n a m e指的是终端设备，则不将此设备分配作为此进程的控制终端。
+- O_NONBLOCK 如果p a t h n a m e指的是一个F I F O、一个块特殊文件或一个字符特殊文件，
+则此选择项为此文件的本次打开操作和后续的 I / O操作设置非阻塞方式。
+- O_SYNC 使每次w r i t e都等到物理I / O操作完成。 
+### 2. read()
+读取文件描述符指代的文件中的数据。
+```
+#include <unistd.h>
+ssize_t read(int fildes, void *buf, size_t nbyte);
+```
+#### 2.1 return:返回实际读取的字节数，如果读到文件末尾(遇到文件结束符EOF)则会返回0.如果出现错误则返回-1.
+#### 2.2 filedes: 要打开文件的文件描述符.
+#### 2.3 *buf: 缓冲区(自己手动定义,因为linux系统调用不会分配内存缓冲区用来返回信息给调用者。所以需要先自己分配缓冲区，病将缓冲区指针传递给系统调用 。缓冲区大小自己设定，一般设为1024)
+### 3. write()
+将数据写入一个已打开(文件描述符指代)的文件中。
+```
+#include <unistd.h>s
+ssize_t write(int fildes, const void *buf, size_t nbyte);
+```
+#### 3.1  return: 返回实际写入的字节数。
+#### 3.2 fildes:要写入文件的文件描述符
+#### 3.3 buf: 要写入文件中数据的内存地址。
+### 4 close()
+关闭一个已打开的文件
+```
+#include <unistd.h>
+
+int close(int fildes);
+
+```
+####  4.1 return:关闭文件失败时返回-1。
+#### 4.2 fildes: 要关闭文件的文件描述符。
+### 5. 文件空洞: 所有已打开的文件，内核中都有一个文件偏移量用以制定下次读或写操作的起始位置。读、写操作隐式修改文件偏移量。使用lseek()函数可以显示修改文件偏移量。在文件结尾之后的某一个位置写书数据将导致文件空洞，从文件空洞处读取文件将返回全0字节。
+## 二. copy命令的简单实现：
+### 1. copy.c
+```
+#include <sys/stat.h>
+#include<fcntl.h>
+#include "tlpi_hdr.h"
+
+#ifndef BUF_SIZE
+#define BUF_SIZE 1024
+#endif
+int main(int argc, char *argv[])
+{
+   int inputFd, outputFd, openFlags;
+   mode_t filePerms;
+   ssize_t numRead;
+   char buf[BUF_SIZE];
+
+   if(argc !=3 || strcmp(argv[1], "--hlep")==0)
+   usageErr("%s old-flie new-file\n",argv[0]);
+
+inputFd = open(argv[1], O_RDONLY);
+if(inputFd== -1)
+    errExit("opening file %s", argv[1]);
+printf("fd %d",inputFd);
+openFlags = O_CREAT | O_WRONLY |O_TRUNC;
+filePerms =S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |S_IROTH |S_IWOTH;
+outputFd = open(argv[2],openFlags, filePerms);
+if(outputFd == -1)
+    errExit("opening file %s",argv[2]);
+    /* 开始读取并将数据写入到要复制到的文件中*/
+while((numRead =read(inputFd, buf, BUF_SIZE))>0)
+    if(write(outputFd,buf,numRead) != numRead)
+        fatal("couldn't write whole buffer");
+if(numRead== -1)
+    errExit("read");
+
+if(close(inputFd) == -1)
+    errExit("close input");
+
+if(close(outputFd) == -1)
+    errExit("close output");
+
+    exit(EXIT_SUCCESS);
+}
+```
+### 2. tlpi_hdr.h
+```
+#ifndef  TLPI_HDR_H
+#define TLPI_HDR_H  /*防止包含2次"*/
+
+#include <sys/types.h> 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <unistd.h> /*常用系统调用原型*/
+#include <errno.h> /*声明错误代码 ，定义错误常量*/
+#include <string.h> /*常用字符串处理函数*/
+
+#include "get_num.h" /*声明我们数字参数处理函数*/
+
+#include "error_functions.h" /*声明我们的错误处理函数*/
+
+typedef enum {FALSE,TRUE} Boolean;
+#endif 
+
+```
+### 3. get_num.h
+```
+#ifndef  TLPI_HDR_H
+#define TLPI_HDR_H  /*防止包含2次"*/
+
+#include <sys/types.h> 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <unistd.h> /*常用系统调用原型*/
+#include <errno.h> /*声明错误代码 ，定义错误常量*/
+#include <string.h> /*常用字符串处理函数*/
+
+#include "get_num.h" /*声明我们数字参数处理函数*/
+
+#include "error_functions.h" /*声明我们的错误处理函数*/
+
+typedef enum {FALSE,TRUE} Boolean;
+#endif 
+
+```
+### 4. get_num.c
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <errno.h>
+#include "get_num.h"
+
+static void gnFail(const char *fname, const char *msg, const char *arg, const char *name)
+{
+    fprintf(stderr, "%s error", fname);
+
+    if(name !=NULL)
+        fprintf(stderr, " (in %s)", name);
+    fprintf(stderr, ": %s\n", msg);   
+    if (arg !=NULL && *arg != '\0')
+        fprintf(stderr, "       offending text: %s\n",arg);
+        exit(EXIT_FAILURE);
+}
+static long getNum(const char *fname, const char *arg,int flags,const char *name)
+{
+    long res;
+    char *endptr;
+    int base;
+
+    if (arg == NULL || *arg == '\0')
+        gnFail(fname, "null or empty string", arg, name);
+    
+    base=(flags & GN_ANY_BASE) ? 0 : (flags & GNBASE_8 ? 8 :(flags & GN_BASE_16) ? 16 : 10);
+
+    errno = 0;
+    res = strtol(arg, &endptr, base);
+    if(errno != '\0')
+        gnFail(fname, "strtol() failed", arg, name);
+
+    if ((flags & GN_NONNEG) && res < 0)
+        gnFail(fname, "negative value not allowed",arg, name);
+    
+    if((flags & GN_GT_0)&& res <= 0)
+        gnFail(fname, "value must be > 0", arg, name);
+        
+    return res;
+}
+
+long getLong(const char *arg, int flags, const char *name)
+{
+    return getNum("getLong", arg, flags, name);
+}
+int getInt(const char *arg, int flags, const char *name)
+{
+    long res;
+    res = getNum("getIn", arg, flags, name);
+    if(res > INT_MAX || res <INT_MIN)
+        gnFail("getInt", "integer out of range", arg, name);
+    
+    return (int)res;
+}
+```
+### 5. error_functions.h
+```
+#ifndef ERROR_FUNCTIONS_H
+#define ERROR_FUNCTIONS_H
+
+void errMsg(const char *format, ...);
+#ifdef  _GNUC
+
+#define NORETURN _attribute_ ((_noreturn_))
+#else
+#define NORETURN
+#endif 
+
+void errExit(const char *format, ...) NORETURN;
+
+void err_exit(const char *format, ...) NORETURN;
+
+void errExitEN(int errnum, const char *format, ...) NORETURN;
+
+void fatal(const char *format, ...) NORETURN;
+
+void usageErr(const char *format, ...) NORETURN;
+
+void cmdLineErr(const char *format, ...) NORETURN;
+#endif
+```
+### 6. error_function.c
+```
+#include <stdarg.h>
+#include "error_functions.h"
+#include "tlpi_hdr.h"
+#include "ename.c.inc"
+
+#ifdef  _GNUC_
+_attribute_ ((_noreturn_))
+#endif
+static void terminate(Boolean useExit3)
+{
+    char *s;
+    s=getenv("EF_DUMPCORE"); //获取环境变量
+
+    if(s!=NULL && *s!= '\0')
+        abort();
+    else if (useExit3)
+        exit(EXIT_FAILURE);
+    else
+        _exit(EXIT_FAILURE);
+}
+static void outputError(Boolean userErr, int err, Boolean flushStdout, const char *format,va_list ap)
+{
+    #define BUF_SIZE 500
+    char buf[BUF_SIZE], userMsg[BUF_SIZE], errText[BUF_SIZE];
+
+    vsnprintf(userMsg, BUF_SIZE,format, ap);
+
+    if(userErr)
+        snprintf(errText, BUF_SIZE," [%s,%s]",(err>0 && err<=MAX_ENAME)?ename[err]:"?UNKOWN?",strerror(err));
+    else
+        snprintf(errText,BUF_SIZE,":");
+    snprintf(buf,BUF_SIZE,"ERROR%S %S\n",errText,userMsg);
+
+    if(flushStdout)
+        fflush(stdout);
+    fputs(buf,stderr);
+}
+ void errMsg(const char *format, ...)
+ {
+     va_list argList;
+     int savedErrno;
+
+     savedErrno = errno;
+     va_start(argList,format);
+     outputError(TRUE,errno,TRUE,format,argList);
+     va_end(argList);
+
+     terminate(TRUE);
+ }
+ void errExit(const char *format, ...)
+ {
+     va_list argList;
+
+     va_start(argList, format);
+     outputError(TRUE, errno, TRUE, format, argList);
+     va_end(argList);
+
+     terminate(TRUE);
+ }
+ void err_exit(const char *format, ...)
+ {
+     va_list argList;
+
+     va_start(argList, format);
+     outputError(TRUE, errno, FALSE, format, argList);
+     va_end(argList);
+
+     terminate(FALSE);
+ }
+ void errExitEN(int errnum, const char *format, ...)
+ {
+     va_list argList;
+
+     va_start(argList, format);
+     outputError(TRUE, errnum,TRUE, format, argList);
+     va_end(argList);
+
+     terminate(TRUE);
+ }
+
+ void fatal(const char *format, ...)
+ {
+     va_list argList;
+
+     va_start(argList, format);
+     outputError(FALSE, 0, TRUE,format, argList);
+     va_end(argList);
+
+     terminate(TRUE);
+ }
+ void usageErr(const char *format, ...)
+ {
+     va_list argList;
+
+     fflush(stdout);
+
+     fprintf(stderr,"Usage: ");
+     va_start(argList, format);
+     vfprintf(stderr, format, argList);
+     va_end(argList);
+
+     fflush(stderr);
+     exit(EXIT_FAILURE);
+}
+void cmdLineErr(const char *format, ...)
+{
+    va_list argList;
+
+    fflush(stdout);
+
+    fprintf(stderr, "Command-line usage error:");
+    va_start(argList, format);
+    vfprintf(stderr, format, argList);
+    va_end(argList);
+
+    fflush(stderr);
+    exit(EXIT_FAILURE);
+}
+
+```
+### 7. ename.c.inc
+```
+static char *ename[] = {
+    /*  0   */ "",
+    /*  1   */ "EPERM", "ENOENT", "ESRCH", "EIO", "EXIO", "E2BIG",
+    /*  8   */ "ENOEXEC", "EBADF", "ECHILD", "EAGAIN/EWOULDBLOCK", "ENOMEM",
+    /*  13  */ "EACCES", "EFAULT", "ENOTBLK", "EBUSY", "EEXIST", "EXDEV",
+    /*  19  */ "ENODEV", "ENOTDIR", "EISDIR", "EINVAL", "ENFILE", "EMFILE",
+    /*  25  */ "ENOTTY", "ETXTBSY", "EFBIG",  "ENOSPC", "ESPIPE", "EROFS",
+    /*  31  */ "EMLINK", "EPIPE", "EDOM", "ERANGE", "EDEADLK/EDEADLOCK",
+    /*  36  */ "ENMAETOOLONG", "ENOLCK", "ENOSYS", "ENOTEMPTY", "ELPP", "",
+    /*  42  */ "ENOMSG", "EIDRM", "ECHRNG", "EL2NSYNC", "EL3HLT", "EL3RST",
+    /*  48  */  "ELNRNG", "EUNATCH", "ENOCSI", "EL2HLT", "EBADE", "EBADR",
+    /*  54  */ "EXFULL", "ENOANO", "EBADRO", "EBADSLT", "", "EBFONT", "ENOSTR",
+    /*  61  */ "ENODATA", "ETIME", "ENOSR", "ENONET", "ENOPKG", "EREMOTE",
+    /*  67  */ "ENOLINK", "EADV", "ESRMNT", "ECOMM", "EPROTO", "EMULITIHOP",
+    /*  73  */ "EDOTDOT", "EBADMSG", "EOVERFLOW", "ENOTUNIQ", "EBADFD",
+    /*  78  */ "EREMCHG", "ELIBACC", "ELIBBAD", "ELIBSCN", "ELIBMAX",
+    /*  83  */ "ELIBEXECC", "EILSEQ", "ERESTART", "ESTRPIPe", "EUSERS",
+    /*  88  */ "ENOTSOCK", "EDESTADDRREQ", "EMSGSIZE", "EPROTOTYPE",
+    /*  92  */ "ENOPROTOOPT", "EPROTONOSUPPORT", "ESOCKTNOSUPPORT",
+    /*  95  */ "EOPNOTSUPP/ENOTSUP", "EPFNOSUPPORT", "EAFNOSUPPORT",
+    /*  98  */ "EADDRINUSE", "EADDRNOTAVAIL", "ENETDOWN", "ENETUNREACH",
+    /*  102 */ "ENETRESET", "ECONNABORTED", "ECONNRESET", "ENOBUFS", "EISCONN",
+    /*  107 */ "ENOTCONN", "ESHUTDOWN", "ETOOMANYREFS", "ETIMEDOUT",
+    /*  111 */ "ECONNREFUSED", "EHOSTDOWN", "EHOSTUNREACH", "EALREADY",
+    /*  115 */ "EINPROGRESS", "ESTALE", "EUCLEAN", "ENOTNAM", "ENAVAIL",
+    /*  120 */ "EISNAM", "EREMOTEIO", "EDQUOT", "ENOMEDIUM", "EMEDIUMTYPE",
+    /*  125 */ "ECANCELED", "ENOKEY", "EKEYEXPIRED", "EKEYREVOKED",
+    /*  129 */ "EKEYREJECTED", "EOWNERDEAD", "ENOTRECOVERABLE", "ERFKILL"
+};
+#define MAX_ENAME 132
+```
