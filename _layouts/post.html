@@ -36,6 +36,9 @@ layout: default
     {% if site.disqus.shortname %} {% include disqus_comments.html %} {% endif %}
 </article>
 <script>
+    $(document).ready(function(){
+        $("table").addClass("table-striped")
+    });
     function categoryClick(id) {
         var displayDiv = "table-" + id;
         var isDisplay = ($("#" + displayDiv).css("display") != "none");
