@@ -37,7 +37,7 @@ layout: default
 </article>
 <script>
     $(document).ready(function(){
-        $("article table").css("border","1px solid");//为markdown文章里的表格 添加样式
+        $("article table").addClass("table table-hover table-responsive");//为markdown文章里的表格 添加样式
     });
     function categoryClick(id) {
         var displayDiv = "table-" + id;
@@ -47,7 +47,7 @@ layout: default
             $("#" + displayDiv).fadeOut(600);
 
         } else {
-            $(".table").css("display", "none");
+            $("main table").css("display", "none");
             $("#" + displayDiv).fadeIn(600);
 
         }
