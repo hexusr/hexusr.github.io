@@ -37,7 +37,7 @@ layout: default
 </article>
 <script>
     $(document).ready(function(){
-        $("article table").addClass("markdown-table table-responsive");//为markdown文章里的表格 添加样式
+        $("article table").css("border","1px solid");//为markdown文章里的表格 添加样式
     });
     function categoryClick(id) {
         var displayDiv = "table-" + id;
