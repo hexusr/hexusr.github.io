@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "CentOS7安装配置MySql(MariaDB)及常用命令"
+title:  "CentOS7安装配置MySQL(MariaDB)及常用命令"
 date:   2017-03-29
 categories: Linux
 ---
@@ -30,7 +30,7 @@ systemctl  enable  mariadb
 mysql_secure_installation
 ```
 
-执行后
+执行后 会提示如下:
 
 ```
 Enter current password for root (enter for none): 
@@ -43,11 +43,11 @@ Enter current password for root (enter for none):
 ```
 # mysql -u root -p
 ```
-后收入密码登录MariaDB
+输入密码登录MariaDB
 
 # 二. MySql常用命令
 
-## 1. 创建新MySql用户及用户权限管理
+## 1. 创建新MySQL用户及用户权限管理
 
 用户权限在MySQL中其实就是一张表，用户名密码，权限保存在mysql数据库中的user表中，
 
@@ -55,11 +55,7 @@ Enter current password for root (enter for none):
 
 user表中host字段表示该用户可以从哪个地址登录MySQL数据库
 
-Column A | Column B | Column C
----------|----------|---------
- A1 | B1 | C1
- A2 | B2 | C2
- A3 | B3 | C3
+
 
 user表中host列的值的意义
 host|含义
