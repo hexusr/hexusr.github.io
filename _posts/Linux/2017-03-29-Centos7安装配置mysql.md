@@ -15,19 +15,19 @@ categories: Linux
 ## 2. 启动MariaDB服务
 
 ```
- systemctl start mariadb
+# systemctl start mariadb
 ```
 
 ## 3. 设置MariaDB服务开机自动启动
 
 ```
-systemctl  enable  mariadb
+# systemctl  enable  mariadb
 ```
 
 ## 4. 进行配置MariaDB
 
 ```
-mysql_secure_installation
+# mysql_secure_installation
 ```
 
 执行后 会提示如下:
@@ -105,9 +105,14 @@ show grants for rlq
 
 格式  授予用户拥有数据库中某个表的某个权限
 
+
+如果被授予权限的用户不存在，则会创建此用户(创建的用户的Host字段为%)
+
+
 ```
 grant 权限, on 数据库.表名 to 用户名;
 ```
+
 
 授予username 拥有整个MySQL中所有数据库的权限
 
